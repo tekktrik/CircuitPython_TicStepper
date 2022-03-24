@@ -2,9 +2,12 @@ from circuitpython_ticstepper.constants import StepMode
 
 try:
     import typing  # pylint: disable=unused-import
-    from circuitpython_ticstepper.constants import StepModeValues  # pylint: disable=ungrouped-imports
+    from circuitpython_ticstepper.constants import (
+        StepModeValues,
+    )  # pylint: disable=ungrouped-imports
 except ImportError:
     pass
+
 
 class TicMotor:
 
@@ -19,12 +22,12 @@ class TicMotor:
         raise NotImplementedError("Must define in subclass")
 
     def _rpm_to_pps(self, rpm: float) -> int:
-        return int(rpm*self._step_mode.multiplier*10000)
+        return int(rpm * self._step_mode.multiplier * 10000)
 
     @property
     def step_mode(self) -> StepMode:
         return self._step_mode
-    
+
     @step_mode.setter
     def step_mode(self, mode: StepMode) -> None:
         raise NotImplementedError("Must define in subclass")
@@ -33,13 +36,13 @@ class TicMotor:
     def settings(self):
         raise NotImplementedError("Must define in subclass")
 
-    #@property
-    #def position(self):
+    # @property
+    # def position(self):
     #    raise NotImplementedError("Must define in subclass")
 
     def move(self, units):
         raise NotImplementedError("Must define in subclass")
-    
+
     def drive(self, rpm):
         raise NotImplementedError("Must define in subclass")
 

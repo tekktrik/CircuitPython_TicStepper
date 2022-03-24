@@ -2,6 +2,7 @@ from collections import namedtuple
 
 StepModeValues = namedtuple("StepModeValues", ["value", "multiplier"])
 
+
 class StepMode:
 
     FULL = StepModeValues(0, 1)
