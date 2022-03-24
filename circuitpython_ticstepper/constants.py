@@ -1,9 +1,25 @@
+# SPDX-FileCopyrightText: Copyright (c) 2022 Alec Delaney
+#
+# SPDX-License-Identifier: MIT
+
+"""
+`circuitpython_ticstepper.constants`
+================================================================================
+
+Constants need to TIC stepper motor driver operation
+
+
+* Author(s): Alec Delaney
+
+"""
+
 from collections import namedtuple
 
 StepModeValues = namedtuple("StepModeValues", ["value", "multiplier"])
 
 
 class StepMode:
+    """Step mode constants"""
 
     FULL = StepModeValues(0, 1)
     HALF = StepModeValues(1, 2)
@@ -17,6 +33,11 @@ class StepMode:
 
     @classmethod
     def get_by_value(cls, value: int):
+        """Gets a StepMode constant by the TIC param value
+
+        :param int value: The TIC param value
+        """
+
         for attr_value in cls.__dict__.values():
             if isinstance(attr_value, StepModeValues) and attr_value.value == value:
                 return attr_value
