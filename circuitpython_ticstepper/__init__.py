@@ -13,7 +13,6 @@ class TicMotor:
     def __init__(self, step_mode: StepModeValues = StepMode.FULL) -> None:
         self._step_mode = step_mode
         self._rpm = 0
-
         self.clear()
 
     def clear(self) -> None:
@@ -21,7 +20,6 @@ class TicMotor:
 
     def _rpm_to_pps(self, rpm: float) -> int:
         return int(rpm*self._step_mode.multiplier*10000)
-        #return int(rpm*10000)
 
     @property
     def step_mode(self) -> StepMode:
@@ -35,9 +33,9 @@ class TicMotor:
     def settings(self):
         raise NotImplementedError("Must define in subclass")
 
-    @property
-    def position(self):
-        raise NotImplementedError("Must define in subclass")
+    #@property
+    #def position(self):
+    #    raise NotImplementedError("Must define in subclass")
 
     def move(self, units):
         raise NotImplementedError("Must define in subclass")

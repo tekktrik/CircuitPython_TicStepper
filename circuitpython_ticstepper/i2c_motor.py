@@ -6,9 +6,11 @@ from circuitpython_ticstepper import TicMotor
 from circuitpython_ticstepper.constants import StepMode
 
 try:
-    import typing  # pylint: disable=unused-import
+    from typing import Optional, Type, List
+    from circuitpython_typing import ReadableBuffer
+    import circuitpython_typing.device_drivers import I2CDeviceDriver
     from busio import I2C
-    from tic_driver.constants import StepModeValues
+    from circuitpython_ticstepper.constants import StepModeValues
 except ImportError:
     pass
 
@@ -27,20 +29,19 @@ class ClearMSBByteStruct:
     module documentation for struct format string and its possible value types.
     
     :param int register_address: The register address to read the bit from
-    :param type struct_format: The struct format string for this register.
     """
 
-    def __init__(self, register_address):
+    def __init__(self, register_address: int) -> None:
         self.format = "<b"
         self.buffer = bytearray(1 + struct.calcsize(self.format))
         self.buffer[0] = register_address
 
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj: "TicMotorI2C", objtype: Type["TicMotorI2C"] = None) -> List[int]:
         with obj.i2c_device as i2c:
             i2c.write_then_readinto(self.buffer, self.buffer, out_end=1, in_start=1)
         return struct.unpack_from(self.format, memoryview(self.buffer)[1:])
 
-    def __set__(self, obj, value):
+    def __set__(self, obj: "TicMotorI2C", value: ReadableBuffer) -> None:
         struct.pack_into(self.format, self.buffer, 1, *value)
         with obj.i2c_device as i2c:
             i2c.write(self.buffer)
@@ -54,7 +55,7 @@ class TicMotorI2C(TicMotor):
     _move_reg = Struct(_CMD_MOVE, "<i")
     _drive_reg = Struct(_CMD_DRIVE, "<i")
 
-    def __init__(self, i2c: I2C, address: int = 0x0E, step_mode: StepModeValues = StepMode.FULL):
+    def __init__(self, i2c: I2C, address: int = 0x0E, step_mode: StepModeValues = StepMode.FULL) -> None:
 
         self.i2c_device = I2CDevice(i2c, address)
 
@@ -71,9 +72,9 @@ class TicMotorI2C(TicMotor):
         self._step_mode = mode
         self._step_mode_reg = [mode.value]
 
-    @property
-    def position(self):
-        return super().position
+    #@property
+    #def position(self):
+    #    return super().position
 
     def clear(self) -> None:
         self.reset()
@@ -82,13 +83,13 @@ class TicMotorI2C(TicMotor):
         with self.i2c_device as i2c:
             i2c.write(bytes(cmd))
         
-    def reset(self):
+    def reset(self) -> None:
         self._quick_write(_CMD_RESET)
 
-    def reinit(self):
+    def reinit(self) -> None:
         self.step_mode = self._step_mode
 
-    def clear_error(self):
+    def clear_error(self) -> None:
         self._quick_write(_CMD_CLEAR_ERROR)
 
     @property
@@ -97,22 +98,21 @@ class TicMotorI2C(TicMotor):
 
     @max_speed.setter
     def max_speed(self, rpm: float) -> None:
-        if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
-            raise ValueError("Given speed is over the RPM threshold")
+        #if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
+        #    raise ValueError("Given speed is over the RPM threshold")
         pulse_speed = self._rpm_to_pps(rpm)
         self._max_speed_reg = pulse_speed
         self.MAX_RPM = rpm
 
-    def halt(self):
+    def halt(self) -> None:
         self._halt_and_set_reg = [0]
 
-    def move(self, units):
-        #self.clear()
+    def move(self, units) -> None:
         self._move_reg = [units]
 
-    def drive(self, rpm):
+    def drive(self, rpm: float) -> None:
         if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
-            raise ValueError("Cannot set speed above 400 RPM")
+            raise ValueError("Cannot set speed above {} RPM".format(self.MAX_RPM))
 
         self._drive_reg = [self._rpm_to_pps(rpm)]
         self._rpm = rpm
