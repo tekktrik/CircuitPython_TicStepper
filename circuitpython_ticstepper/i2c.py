@@ -38,7 +38,7 @@ class ClearMSBByteStruct:
         self.buffer[0] = register_address
 
     def __get__(
-        self, obj: "TicMotorI2C", objtype: Type["TicMotorI2C"] = None
+        self, obj: "TicMotorI2C", objtype: Optional[Type["TicMotorI2C"]] = None
     ) -> List[int]:
         with obj.i2c_device as i2c:
             i2c.write_then_readinto(self.buffer, self.buffer, out_end=1, in_start=1)
