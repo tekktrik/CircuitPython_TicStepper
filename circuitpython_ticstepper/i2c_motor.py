@@ -8,7 +8,7 @@ from circuitpython_ticstepper.constants import StepMode
 try:
     from typing import Optional, Type, List
     from circuitpython_typing import ReadableBuffer
-    import circuitpython_typing.device_drivers import I2CDeviceDriver
+    from circuitpython_typing.device_drivers import I2CDeviceDriver
     from busio import I2C
     from circuitpython_ticstepper.constants import StepModeValues
 except ImportError:
@@ -58,9 +58,7 @@ class TicMotorI2C(TicMotor):
     def __init__(self, i2c: I2C, address: int = 0x0E, step_mode: StepModeValues = StepMode.FULL) -> None:
 
         self.i2c_device = I2CDevice(i2c, address)
-
         super().__init__(step_mode)
-
         self.clear()
 
     @property
