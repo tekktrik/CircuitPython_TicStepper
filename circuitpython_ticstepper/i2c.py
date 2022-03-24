@@ -1,3 +1,18 @@
+# SPDX-FileCopyrightText: Copyright (c) 2022 Alec Delaney
+#
+# SPDX-License-Identifier: MIT
+
+"""
+`circuitpython_ticstepper.i2c`
+================================================================================
+
+TIC Motor over I2C control
+
+
+* Author(s): Alec Delaney
+
+"""
+
 import struct
 from micropython import const
 from adafruit_bus_device.i2c_device import I2CDevice
@@ -8,9 +23,10 @@ from circuitpython_ticstepper.constants import StepMode
 try:
     from typing import Optional, Type, List
     from circuitpython_typing import ReadableBuffer
-    from circuitpython_typing.device_drivers import I2CDeviceDriver
     from busio import I2C
-    from circuitpython_ticstepper.constants import StepModeValues
+    from circuitpython_ticstepper.constants import (  # pylint: disable=ungrouped-imports
+        StepModeValues,
+    )
 except ImportError:
     pass
 
@@ -51,6 +67,12 @@ class ClearMSBByteStruct:
 
 
 class TicMotorI2C(TicMotor):
+    """TIC motor driver contolled via I2C
+
+    :param I2C i2c: The I2C bus object
+    :param int address: The I2C address of the motor driver
+    :param StepModeValues step_mode: The step mode to use
+    """
 
     _step_mode_reg = ClearMSBByteStruct(_CMD_STEP_MODE)
     _max_speed_reg = Struct(_CMD_MAX_SPEED, "<I")
@@ -68,6 +90,7 @@ class TicMotorI2C(TicMotor):
 
     @property
     def step_mode(self) -> StepModeValues:
+        """Gets and sets the stepper step mode"""
         return super().step_mode
 
     @step_mode.setter
@@ -80,6 +103,7 @@ class TicMotorI2C(TicMotor):
     #    return super().position
 
     def clear(self) -> None:
+        """Clears and reinits the stepper motor"""
         self.reset()
 
     def _quick_write(self, cmd: int) -> None:
@@ -87,16 +111,20 @@ class TicMotorI2C(TicMotor):
             i2c.write(bytes(cmd))
 
     def reset(self) -> None:
+        """Resets the motor driver"""
         self._quick_write(_CMD_RESET)
 
     def reinit(self) -> None:
+        """Reinitializes the motor driver"""
         self.step_mode = self._step_mode
 
     def clear_error(self) -> None:
+        """Clears errors for the motor driver"""
         self._quick_write(_CMD_CLEAR_ERROR)
 
     @property
     def max_speed(self) -> float:
+        """Gets and sets the maximum speed for the motor"""
         raise AttributeError("Max speed is writable only")
 
     @max_speed.setter
@@ -105,15 +133,25 @@ class TicMotorI2C(TicMotor):
         #    raise ValueError("Given speed is over the RPM threshold")
         pulse_speed = self._rpm_to_pps(rpm)
         self._max_speed_reg = pulse_speed
-        self.MAX_RPM = rpm
+        super().MAX_RPM = rpm
 
     def halt(self) -> None:
+        """Stops the motor"""
         self._halt_and_set_reg = [0]
 
-    def move(self, units) -> None:
+    def move(self, units: int) -> None:
+        """Moves the given number of steps/microsteps
+
+        :param int units: The number of steps/microsteps to move
+        """
         self._move_reg = [units]
 
     def drive(self, rpm: float) -> None:
+        """Drives the motor at a given speed
+
+        :param float rpm: The speed to move the motor in RPM
+        """
+
         if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
             raise ValueError("Cannot set speed above {} RPM".format(self.MAX_RPM))
 
