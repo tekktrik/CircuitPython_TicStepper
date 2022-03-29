@@ -32,13 +32,16 @@ class StepMode:
     TWO_FIFTY_SIXTH = StepModeValues(9, 256)
 
     @classmethod
-    def get_by_value(cls, value: int):
+    def get_by_factor(cls, factor: int):
         """Gets a StepMode constant by the TIC param value
 
         :param int value: The TIC param value
         """
 
         for attr_value in cls.__dict__.values():
-            if isinstance(attr_value, StepModeValues) and attr_value.value == value:
+            if (
+                isinstance(attr_value, StepModeValues)
+                and attr_value.multiplier == factor
+            ):
                 return attr_value
         raise ValueError("Could not find the requested step mode")

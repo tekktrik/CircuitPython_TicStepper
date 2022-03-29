@@ -138,6 +138,8 @@ class TicMotorI2C(TicMotor):
     def halt(self) -> None:
         """Stops the motor"""
         self._halt_and_set_reg = [0]
+        self.step_mode = self._step_mode
+        self._rpm = 0
 
     def move(self, units: int) -> None:
         """Moves the given number of steps/microsteps
