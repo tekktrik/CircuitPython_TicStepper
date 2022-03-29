@@ -99,7 +99,7 @@ class TicMotorI2C(TicMotor):
     @property
     def step_mode(self) -> StepModeValues:
         """Gets and sets the stepper step mode"""
-        #return super().step_mode
+        # return super().step_mode
         self._get_var_8bit_unsigned_reg = [_OFFSET_STEP_MODE]
         return StepMode.get_by_enum(self._get_var_8bit_unsigned_reg[0])
 
@@ -151,7 +151,7 @@ class TicMotorI2C(TicMotor):
         :param float rpm: The speed to move the motor in RPM
         """
 
-        #if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
+        # if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
         #    raise ValueError("Cannot set speed above {} RPM".format(self.MAX_RPM))
 
         self._drive_reg = [self._rpm_to_pps(rpm)]
@@ -160,7 +160,7 @@ class TicMotorI2C(TicMotor):
     @property
     def is_moving(self) -> bool:
         """Whether the stepper motor is actively moving"""
-        
+
         self._get_var_32bit_signed_reg = [_OFFSET_CURRENT_VELOCITY]
         return self._get_var_32bit_signed_reg[0] != 0
 

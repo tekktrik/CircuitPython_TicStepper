@@ -49,14 +49,11 @@ class StepMode:
     @classmethod
     def get_by_enum(cls, enum: int):
         """Gets a StepMode by the Tic enum value
-        
+
         :param int enum: The Tic enum value
         """
 
         for attr_value in cls.__dict__.values():
-            if (
-                isinstance(attr_value, StepModeValues)
-                and attr_value.value == enum
-            ):
+            if isinstance(attr_value, StepModeValues) and attr_value.value == enum:
                 return attr_value
         raise ValueError("Could not find the requested step mode")
