@@ -40,6 +40,7 @@ _CMD_DRIVE = const(0xE3)
 _CMD_GET_VAR = const(0xA1)
 
 _OFFSET_CURRENT_VELOCITY = const(0x26)
+_OFFSET_STEP_MODE = const(0x49)
 _OFFSET_UPTIME = const(0x35)
 
 
@@ -85,6 +86,7 @@ class TicMotorI2C(TicMotor):
     _drive_reg = Struct(_CMD_DRIVE, "<i")
     _get_var_32bit_signed_reg = Struct(_CMD_GET_VAR, "<i")
     _get_var_32bit_unsigned_reg = Struct(_CMD_GET_VAR, "<I")
+    _get_var_8bit_unsigned_reg = Struct(_CMD_GET_VAR, "<B")
 
     def __init__(
         self, i2c: I2C, address: int = 0x0E, step_mode: StepModeValues = StepMode.FULL
@@ -97,7 +99,9 @@ class TicMotorI2C(TicMotor):
     @property
     def step_mode(self) -> StepModeValues:
         """Gets and sets the stepper step mode"""
-        return super().step_mode
+        #return super().step_mode
+        self._get_var_8bit_unsigned_reg = [_OFFSET_STEP_MODE]
+        return StepMode.get_by_enum(self._get_var_8bit_unsigned_reg[0])
 
     @step_mode.setter
     def step_mode(self, mode: StepModeValues) -> None:
