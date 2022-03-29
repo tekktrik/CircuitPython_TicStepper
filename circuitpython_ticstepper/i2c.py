@@ -122,19 +122,6 @@ class TicMotorI2C(TicMotor):
         """Clears errors for the motor driver"""
         self._quick_write(_CMD_CLEAR_ERROR)
 
-    @property
-    def max_speed(self) -> float:
-        """Gets and sets the maximum speed for the motor"""
-        raise AttributeError("Max speed is writable only")
-
-    @max_speed.setter
-    def max_speed(self, rpm: float) -> None:
-        # if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
-        #    raise ValueError("Given speed is over the RPM threshold")
-        pulse_speed = self._rpm_to_pps(rpm)
-        self._max_speed_reg = pulse_speed
-        super().MAX_RPM = rpm
-
     def halt(self) -> None:
         """Stops the motor"""
         self._halt_and_set_reg = [0]
@@ -154,8 +141,8 @@ class TicMotorI2C(TicMotor):
         :param float rpm: The speed to move the motor in RPM
         """
 
-        if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
-            raise ValueError("Cannot set speed above {} RPM".format(self.MAX_RPM))
+        #if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
+        #    raise ValueError("Cannot set speed above {} RPM".format(self.MAX_RPM))
 
         self._drive_reg = [self._rpm_to_pps(rpm)]
         self._rpm = rpm
