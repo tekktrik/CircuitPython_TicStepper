@@ -39,6 +39,9 @@ class StepMode:
         """
 
         for attr_value in cls.__dict__.values():
-            if isinstance(attr_value, StepModeValues) and attr_value.multiplier == factor:
+            if (
+                isinstance(attr_value, StepModeValues)
+                and attr_value.multiplier == factor
+            ):
                 return attr_value
         raise ValueError("Could not find the requested step mode")
