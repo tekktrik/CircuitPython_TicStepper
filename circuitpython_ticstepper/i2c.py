@@ -37,6 +37,10 @@ _CMD_MAX_SPEED = const(0xE6)
 _CMD_HALT = const(0xEC)
 _CMD_MOVE = const(0xE0)
 _CMD_DRIVE = const(0xE3)
+_CMD_GET_VAR = const(0xA1)
+
+_OFFSET_CURRENT_VELOCITY = const(0x26)
+_OFFSET_UPTIME = const(0x35)
 
 
 class ClearMSBByteStruct:
@@ -79,6 +83,8 @@ class TicMotorI2C(TicMotor):
     _halt_and_set_reg = Struct(_CMD_HALT, "<i")
     _move_reg = Struct(_CMD_MOVE, "<i")
     _drive_reg = Struct(_CMD_DRIVE, "<i")
+    _get_var_32bit_signed_reg = Struct(_CMD_GET_VAR, "<i")
+    _get_var_32bit_unsigned_reg = Struct(_CMD_GET_VAR, "<I")
 
     def __init__(
         self, i2c: I2C, address: int = 0x0E, step_mode: StepModeValues = StepMode.FULL
@@ -146,3 +152,19 @@ class TicMotorI2C(TicMotor):
 
         self._drive_reg = [self._rpm_to_pps(rpm)]
         self._rpm = rpm
+
+    @property
+    def is_moving(self) -> bool:
+        """Whether the stepper motor is actively moving"""
+        
+        self._get_var_32bit_signed_reg = [_OFFSET_CURRENT_VELOCITY]
+        return self._get_var_32bit_signed_reg[0] != 0
+
+    @property
+    def uptime(self) -> float:
+        """The number of seconds the motor controller has been up.  This is
+        not affected by a reset command
+        """
+
+        self._get_var_32bit_unsigned_reg = [_OFFSET_UPTIME]
+        return self._get_var_32bit_unsigned_reg[0] / 1000
