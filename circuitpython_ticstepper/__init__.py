@@ -65,7 +65,7 @@ class TicMotor:
 
         :param float rpm: Speed in rpm
         """
-        return int(rpm * self._step_mode.multiplier * 10000)
+        return int((rpm*self._step_mode.multiplier*10000*10)/3)
 
     @property
     def step_mode(self) -> StepMode:
