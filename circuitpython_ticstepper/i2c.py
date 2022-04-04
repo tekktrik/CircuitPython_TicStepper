@@ -91,6 +91,9 @@ class TicMotorI2C(TicMotor):
     _move_reg = Struct(_CMD_MOVE, "<i")
     _drive_reg = Struct(_CMD_DRIVE, "<i")
     _max_accel_reg = Struct()
+    _get_var_32bit_signed_reg = Struct(_CMD_GET_VAR, "<i")
+    _get_var_32bit_unsigned_reg = Struct(_CMD_GET_VAR, "<I")
+    _get_var_8bit_unsigned_reg = Struct(_CMD_GET_VAR, "<B")
 
     def __init__(
         self, i2c: I2C, address: int = 0x0E, step_mode: StepModeValues = StepMode.FULL
@@ -154,7 +157,6 @@ class TicMotorI2C(TicMotor):
         pulse_accel = self._rpm_to_pps(rpms)
         self._max_accel_reg = pulse_accel
 
-
     def halt(self) -> None:
         """Stops the motor"""
         self._halt_and_set_reg = [0]
@@ -174,8 +176,8 @@ class TicMotorI2C(TicMotor):
         :param float rpm: The speed to move the motor in RPM
         """
 
-        if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
-            raise ValueError("Cannot set speed above {} RPM".format(self.MAX_RPM))
+        # if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
+        #    raise ValueError("Cannot set speed above {} RPM".format(self.MAX_RPM))
 
         self._drive_reg = [self._rpm_to_pps(rpm)]
         self._rpm = rpm
