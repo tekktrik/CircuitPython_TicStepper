@@ -73,6 +73,7 @@ class ClearMSBByteStruct:
             i2c.write(self.buffer)
 
 
+# pylint: disable=too-many-instance-attributes
 class TicMotorI2C(TicMotor):
     """TIC motor driver contolled via I2C
 
