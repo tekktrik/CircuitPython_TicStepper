@@ -44,6 +44,9 @@ _CMD_MAX_DECEL = const(0xE9)
 _OFFSET_CURRENT_VELOCITY = const(0x26)
 _OFFSET_STEP_MODE = const(0x49)
 _OFFSET_UPTIME = const(0x35)
+_OFFSET_MAX_SPEED = const(0x47)
+_OFFSET_MAX_ACCEL = const(0x4F)
+_OFFSET_MAX_DECEL = const(0x4B)
 
 
 class ClearMSBByteStruct:
@@ -91,7 +94,9 @@ class TicMotorI2C(TicMotor):
     _halt_and_set_reg = Struct(_CMD_HALT, "<i")
     _move_reg = Struct(_CMD_MOVE, "<i")
     _drive_reg = Struct(_CMD_DRIVE, "<i")
-    _max_accel_reg = Struct()
+    _max_accel_reg = Struct(_CMD_MAX_ACCEL, "<I")
+    _max_decel_reg = Struct(_CMD_MAX_DECEL, "<I")
+
     _get_var_32bit_signed_reg = Struct(_CMD_GET_VAR, "<i")
     _get_var_32bit_unsigned_reg = Struct(_CMD_GET_VAR, "<I")
     _get_var_8bit_unsigned_reg = Struct(_CMD_GET_VAR, "<B")
@@ -138,7 +143,9 @@ class TicMotorI2C(TicMotor):
     @property
     def max_speed(self) -> float:
         """Gets and sets the maximum speed for the motor"""
-        raise AttributeError("Max speed is writable only")
+        self._get_var_32bit_unsigned_reg = [_OFFSET_MAX_SPEED]
+        pps = self._get_var_32bit_unsigned_reg[0]
+        return self._pps_to_rpm(pps)
 
     @max_speed.setter
     def max_speed(self, rpm: float) -> None:
@@ -151,12 +158,26 @@ class TicMotorI2C(TicMotor):
     @property
     def max_accel(self) -> float:
         """The maximum acceleration the motor can experience in rpm/s"""
-        raise AttributeError("Max acceleration is writable only")
+        self._get_var_32bit_unsigned_reg = [_OFFSET_MAX_ACCEL]
+        pps2 = self._get_var_32bit_unsigned_reg[0]
+        return self._pps_to_rpm(pps2)
 
     @max_accel.setter
     def max_accel(self, rpms: float) -> None:
         pulse_accel = self._rpm_to_pps(rpms)
         self._max_accel_reg = pulse_accel
+
+    @property
+    def max_decel(self) -> float:
+        """The maximum deceleration the motor can experience in rpm/s"""
+        self._get_var_32bit_unsigned_reg = [_OFFSET_MAX_DECEL]
+        pps2 = self._get_var_32bit_unsigned_reg[0]
+        return self._pps_to_rpm(pps2)
+
+    @max_decel.setter
+    def max_decel(self, rpms: float) -> None:
+        pulse_decel = self._rpm_to_pps(rpms)
+        self._max_decel_reg = pulse_decel
 
     def halt(self) -> None:
         """Stops the motor"""
