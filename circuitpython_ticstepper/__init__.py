@@ -70,6 +70,13 @@ class TicMotor:
         """
         return int((rpm * self._step_mode.multiplier * 10000 * self.steps_per_rev) / 60)
 
+    def _pps_to_rpm(self, pps: int) -> float:
+        """Converts pulses per second to RPM output
+
+        :param int pps: Pulses per second
+        """
+        return (pps * 3) / (self._step_mode.multiplier * 10000 * 10)
+
     @property
     def step_mode(self) -> StepMode:
         """Gets and sets the stepper step mode"""

@@ -38,6 +38,8 @@ _CMD_HALT = const(0xEC)
 _CMD_MOVE = const(0xE0)
 _CMD_DRIVE = const(0xE3)
 _CMD_GET_VAR = const(0xA1)
+_CMD_MAX_ACCEL = const(0xEA)
+_CMD_MAX_DECEL = const(0xE9)
 
 _OFFSET_CURRENT_VELOCITY = const(0x26)
 _OFFSET_STEP_MODE = const(0x49)
@@ -71,6 +73,7 @@ class ClearMSBByteStruct:
             i2c.write(self.buffer)
 
 
+# pylint: disable=too-many-instance-attributes
 class TicMotorI2C(TicMotor):
     """TIC motor driver contolled via I2C
 
@@ -79,11 +82,16 @@ class TicMotorI2C(TicMotor):
     :param StepModeValues step_mode: The step mode to use
     """
 
+    _get_var_32bit_signed_reg = Struct(_CMD_GET_VAR, "<i")
+    _get_var_32bit_unsigned_reg = Struct(_CMD_GET_VAR, "<I")
+    _get_var_8bit_unsigned_reg = Struct(_CMD_GET_VAR, "<B")
+
     _step_mode_reg = ClearMSBByteStruct(_CMD_STEP_MODE)
     _max_speed_reg = Struct(_CMD_MAX_SPEED, "<I")
     _halt_and_set_reg = Struct(_CMD_HALT, "<i")
     _move_reg = Struct(_CMD_MOVE, "<i")
     _drive_reg = Struct(_CMD_DRIVE, "<i")
+    _max_accel_reg = Struct()
     _get_var_32bit_signed_reg = Struct(_CMD_GET_VAR, "<i")
     _get_var_32bit_unsigned_reg = Struct(_CMD_GET_VAR, "<I")
     _get_var_8bit_unsigned_reg = Struct(_CMD_GET_VAR, "<B")
@@ -99,7 +107,6 @@ class TicMotorI2C(TicMotor):
     @property
     def step_mode(self) -> StepModeValues:
         """Gets and sets the stepper step mode"""
-        # return super().step_mode
         self._get_var_8bit_unsigned_reg = [_OFFSET_STEP_MODE]
         return StepMode.get_by_enum(self._get_var_8bit_unsigned_reg[0])
 
@@ -107,10 +114,6 @@ class TicMotorI2C(TicMotor):
     def step_mode(self, mode: StepModeValues) -> None:
         self._step_mode = mode
         self._step_mode_reg = [mode.value]
-
-    # @property
-    # def position(self):
-    #    return super().position
 
     def clear(self) -> None:
         """Clears and reinits the stepper motor"""
@@ -131,6 +134,29 @@ class TicMotorI2C(TicMotor):
     def clear_error(self) -> None:
         """Clears errors for the motor driver"""
         self._quick_write(_CMD_CLEAR_ERROR)
+
+    @property
+    def max_speed(self) -> float:
+        """Gets and sets the maximum speed for the motor"""
+        raise AttributeError("Max speed is writable only")
+
+    @max_speed.setter
+    def max_speed(self, rpm: float) -> None:
+        # if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
+        #    raise ValueError("Given speed is over the RPM threshold")
+        pulse_speed = self._rpm_to_pps(rpm)
+        self._max_speed_reg = pulse_speed
+        super().MAX_RPM = rpm
+
+    @property
+    def max_accel(self) -> float:
+        """The maximum acceleration the motor can experience in rpm/s"""
+        raise AttributeError("Max acceleration is writable only")
+
+    @max_accel.setter
+    def max_accel(self, rpms: float) -> None:
+        pulse_accel = self._rpm_to_pps(rpms)
+        self._max_accel_reg = pulse_accel
 
     def halt(self) -> None:
         """Stops the motor"""
