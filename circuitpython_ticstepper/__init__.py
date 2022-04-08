@@ -48,11 +48,14 @@ class TicMotor:
     :param StepModeValues step_mode: The step mode to use
     """
 
-    MAX_RPM = 550
+    # MAX_RPM = 550
 
-    def __init__(self, step_mode: StepModeValues = StepMode.FULL) -> None:
+    def __init__(
+        self, step_mode: StepModeValues = StepMode.FULL, *, steps_per_rev=200
+    ) -> None:
         self._step_mode = step_mode
         self._rpm = 0
+        self.steps_per_rev = steps_per_rev
         self.clear()
 
     def clear(self) -> None:
@@ -65,7 +68,14 @@ class TicMotor:
 
         :param float rpm: Speed in rpm
         """
-        return int((rpm * self._step_mode.multiplier * 10000 * 10) / 3)
+        return int((rpm * self._step_mode.multiplier * 10000 * self.steps_per_rev) / 60)
+
+    def _pps_to_rpm(self, pps: int) -> float:
+        """Converts pulses per second to RPM output
+
+        :param int pps: Pulses per second
+        """
+        return (pps * 3) / (self._step_mode.multiplier * 10000 * 10)
 
     @property
     def step_mode(self) -> StepMode:
