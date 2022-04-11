@@ -152,8 +152,7 @@ class TicMotorI2C(TicMotor):
         # if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
         #    raise ValueError("Given speed is over the RPM threshold")
         pulse_speed = self._rpm_to_pps(rpm)
-        self._max_speed_reg = pulse_speed
-        super().MAX_RPM = rpm
+        self._max_speed_reg = [pulse_speed]
 
     @property
     def max_accel(self) -> float:
@@ -165,7 +164,7 @@ class TicMotorI2C(TicMotor):
     @max_accel.setter
     def max_accel(self, rpms: float) -> None:
         pulse_accel = self._rpm_to_pps(rpms)
-        self._max_accel_reg = pulse_accel
+        self._max_accel_reg = [pulse_accel]
 
     @property
     def max_decel(self) -> float:
@@ -177,7 +176,7 @@ class TicMotorI2C(TicMotor):
     @max_decel.setter
     def max_decel(self, rpms: float) -> None:
         pulse_decel = self._rpm_to_pps(rpms)
-        self._max_decel_reg = pulse_decel
+        self._max_decel_reg = [pulse_decel]
 
     def halt(self) -> None:
         """Stops the motor"""
