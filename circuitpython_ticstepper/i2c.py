@@ -80,7 +80,9 @@ class ClearMSBByteStruct:
 
 # pylint: disable=too-many-instance-attributes
 class TicMotorI2C(TicMotor):
-    """TIC motor driver contolled via I2C
+    """Generic TIC motor driver contolled via I2C, this class is not intended
+    to be instanced directly due to various differences between motor controllers
+    - you should use a specific one instead (like ``TIC36v4``)
 
     :param I2C i2c: The I2C bus object
     :param int address: The I2C address of the motor driver

@@ -14,10 +14,10 @@ TIC Motor over I2C control
 """
 
 from circuitpython_ticstepper.i2c import TicMotorI2C
-from circuitpython_ticstepper.constants import StepMode
 
 
 class TIC36v4_I2C(TicMotorI2C):
+    """TIC 36v4 stepper motor controller"""
 
     MAX_CURRENT_LIMIT = 4
     """The maximum current limit for the TIC 36v4.
