@@ -40,6 +40,7 @@ _CMD_DRIVE = const(0xE3)
 _CMD_GET_VAR = const(0xA1)
 _CMD_MAX_ACCEL = const(0xEA)
 _CMD_MAX_DECEL = const(0xE9)
+_CMD_CURRENT_LIMIT = const(0x91)
 
 _OFFSET_CURRENT_VELOCITY = const(0x26)
 _OFFSET_STEP_MODE = const(0x49)
@@ -47,6 +48,7 @@ _OFFSET_UPTIME = const(0x35)
 _OFFSET_MAX_SPEED = const(0x47)
 _OFFSET_MAX_ACCEL = const(0x4F)
 _OFFSET_MAX_DECEL = const(0x4B)
+_OFFSET_CURRENT_LIMIT = const(0x40)
 
 
 class ClearMSBByteStruct:
@@ -96,6 +98,7 @@ class TicMotorI2C(TicMotor):
     _drive_reg = Struct(_CMD_DRIVE, "<i")
     _max_accel_reg = Struct(_CMD_MAX_ACCEL, "<I")
     _max_decel_reg = Struct(_CMD_MAX_DECEL, "<I")
+    _current_limit_reg = ClearMSBByteStruct(_CMD_CURRENT_LIMIT)
 
     _get_var_32bit_signed_reg = Struct(_CMD_GET_VAR, "<i")
     _get_var_32bit_unsigned_reg = Struct(_CMD_GET_VAR, "<I")
@@ -218,3 +221,28 @@ class TicMotorI2C(TicMotor):
 
         self._get_var_32bit_unsigned_reg = [_OFFSET_UPTIME]
         return self._get_var_32bit_unsigned_reg[0] / 1000
+
+    @property
+    def current_limit(self) -> None:
+        """Sets the current limit for the I2C device in Amps"""
+        self._get_var_8bit_unsigned_reg = [_OFFSET_CURRENT_LIMIT]
+        response = self._get_var_8bit_unsigned_reg[0]
+        return self.convert_current_enum(response)
+
+    @current_limit.setter
+    def current_limit(self, current: float) -> None:
+        self._current_limit_reg = self.convert_current_value(current)
+
+    def convert_current_value(self, current: float) -> int:
+        """Converts the desired current into the TIC value, rounds down
+        to nearest acceptable value
+        """
+
+        raise NotImplementedError("Must be implemented in a TIC motor subclass")
+
+    def convert_current_enum(self, enum_value: int) -> float:
+        """Converts the desired TIC enumeration into the corresponding
+        current limit
+        """
+
+        raise NotImplementedError("Must be implemented in a TIC motor subclass")
