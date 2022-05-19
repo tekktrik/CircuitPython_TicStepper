@@ -233,7 +233,7 @@ class TicMotorI2C(TicMotor):
 
     @current_limit.setter
     def current_limit(self, current: float) -> None:
-        self._current_limit_reg = self.convert_current_value(current)
+        self._current_limit_reg = [self.convert_current_value(current)]
 
     def convert_current_value(self, current: float) -> int:
         """Converts the desired current into the TIC value, rounds down
