@@ -48,8 +48,6 @@ class TicMotor:
     :param StepModeValues step_mode: The step mode to use
     """
 
-    # MAX_RPM = 550
-
     def __init__(
         self, step_mode: StepModeValues = StepMode.FULL, *, steps_per_rev=200
     ) -> None:
