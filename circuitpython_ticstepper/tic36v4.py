@@ -6,7 +6,7 @@
 `circuitpython_ticstepper.tic36v4`
 ================================================================================
 
-TIC Motor over I2C control
+TIC 36v4 stepper motor controller
 
 
 * Author(s): Alec Delaney
