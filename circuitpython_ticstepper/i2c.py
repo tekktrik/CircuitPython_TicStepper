@@ -155,7 +155,7 @@ class TicMotorI2C(TicMotor):
         state = self._get_var_8bit_unsigned_reg[0]
         if state == 2:
             return False
-        elif state in (8, 10):
+        if state in (8, 10):
             return True
         raise RuntimeError("Some other energized state was detected")
 
