@@ -133,8 +133,9 @@ class TicMotorI2C(TicMotor):
         self.reset()
 
     def _quick_write(self, cmd: int) -> None:
+        packed_cmd = struct.pack("<B", cmd)
         with self.i2c_device as i2c:
-            i2c.write(bytes(cmd))
+            i2c.write(packed_cmd)
 
     def reset(self) -> None:
         """Resets the motor driver"""
