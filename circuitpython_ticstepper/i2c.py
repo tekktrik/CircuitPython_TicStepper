@@ -34,7 +34,7 @@ _CMD_STEP_MODE = const(0x94)
 _CMD_RESET = const(0xB0)
 _CMD_CLEAR_ERROR = const(0x8A)
 _CMD_MAX_SPEED = const(0xE6)
-_CMD_HALT = const(0xEC)
+_CMD_HALT_SET = const(0xEC)
 _CMD_MOVE = const(0xE0)
 _CMD_DRIVE = const(0xE3)
 _CMD_GET_VAR = const(0xA1)
@@ -98,7 +98,7 @@ class TicMotorI2C(TicMotor):
 
     _step_mode_reg = ClearMSBByteStruct(_CMD_STEP_MODE)
     _max_speed_reg = Struct(_CMD_MAX_SPEED, "<I")
-    _halt_and_set_reg = Struct(_CMD_HALT, "<i")
+    _halt_set_reg = Struct(_CMD_HALT_SET, "<i")
     _move_reg = Struct(_CMD_MOVE, "<i")
     _drive_reg = Struct(_CMD_DRIVE, "<i")
     _max_accel_reg = Struct(_CMD_MAX_ACCEL, "<I")
@@ -202,9 +202,9 @@ class TicMotorI2C(TicMotor):
         pulse_decel = self._rpm_to_pps(rpms)
         self._max_decel_reg = [pulse_decel]
 
-    def halt(self) -> None:
-        """Stops the motor"""
-        self._halt_and_set_reg = [0]
+    def halt_and_set_position(self, position: int = 0) -> None:
+        """Stops the motor and keeps coils energized"""
+        self._halt_set_reg = [position]
         self.step_mode = self._step_mode
         self._rpm = 0
 
