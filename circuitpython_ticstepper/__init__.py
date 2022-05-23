@@ -106,6 +106,6 @@ class TicMotor:
         """
         raise NotImplementedError("Must define in subclass")
 
-    def halt(self) -> None:
-        """Stops the motor"""
+    def halt_and_set_position(self, position: int) -> None:
+        """Stops the motor and sets the position"""
         raise NotImplementedError("Must define in subclass")

@@ -18,7 +18,7 @@ from micropython import const
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register.i2c_struct import Struct
 from circuitpython_ticstepper import TicMotor
-from circuitpython_ticstepper.constants import StepMode
+from circuitpython_ticstepper.constants import StepMode, OperationMode
 
 try:
     from typing import Optional, Type, List
@@ -34,13 +34,15 @@ _CMD_STEP_MODE = const(0x94)
 _CMD_RESET = const(0xB0)
 _CMD_CLEAR_ERROR = const(0x8A)
 _CMD_MAX_SPEED = const(0xE6)
-_CMD_HALT = const(0xEC)
+_CMD_HALT_SET = const(0xEC)
 _CMD_MOVE = const(0xE0)
 _CMD_DRIVE = const(0xE3)
 _CMD_GET_VAR = const(0xA1)
 _CMD_MAX_ACCEL = const(0xEA)
 _CMD_MAX_DECEL = const(0xE9)
 _CMD_CURRENT_LIMIT = const(0x91)
+_CMD_ENERGIZE = const(0x85)
+_CMD_DEENERGIZE = const(0x86)
 
 _OFFSET_CURRENT_VELOCITY = const(0x26)
 _OFFSET_STEP_MODE = const(0x49)
@@ -49,6 +51,7 @@ _OFFSET_MAX_SPEED = const(0x47)
 _OFFSET_MAX_ACCEL = const(0x4F)
 _OFFSET_MAX_DECEL = const(0x4B)
 _OFFSET_CURRENT_LIMIT = const(0x40)
+_OFFSET_ENERGIZED = const(0x00)
 
 
 class ClearMSBByteStruct:
@@ -95,7 +98,7 @@ class TicMotorI2C(TicMotor):
 
     _step_mode_reg = ClearMSBByteStruct(_CMD_STEP_MODE)
     _max_speed_reg = Struct(_CMD_MAX_SPEED, "<I")
-    _halt_and_set_reg = Struct(_CMD_HALT, "<i")
+    _halt_set_reg = Struct(_CMD_HALT_SET, "<i")
     _move_reg = Struct(_CMD_MOVE, "<i")
     _drive_reg = Struct(_CMD_DRIVE, "<i")
     _max_accel_reg = Struct(_CMD_MAX_ACCEL, "<I")
@@ -130,8 +133,9 @@ class TicMotorI2C(TicMotor):
         self.reset()
 
     def _quick_write(self, cmd: int) -> None:
+        packed_cmd = struct.pack("<B", cmd)
         with self.i2c_device as i2c:
-            i2c.write(bytes(cmd))
+            i2c.write(packed_cmd)
 
     def reset(self) -> None:
         """Resets the motor driver"""
@@ -144,6 +148,27 @@ class TicMotorI2C(TicMotor):
     def clear_error(self) -> None:
         """Clears errors for the motor driver"""
         self._quick_write(_CMD_CLEAR_ERROR)
+
+    @property
+    def operation_mode(self) -> int:
+        """Get the current operation mode"""
+        self._get_var_8bit_unsigned_reg = [_OFFSET_ENERGIZED]
+        return self._get_var_8bit_unsigned_reg[0]
+
+    @property
+    def energized(self) -> bool:
+        """Whether the motor coils are energized"""
+        state = self.operation_mode
+        if state == OperationMode.DEENERGIZED:
+            return False
+        if state in (OperationMode.STARTING_UP, OperationMode.NORMAL):
+            return True
+        raise RuntimeError("Some other operation mode was detected")
+
+    @energized.setter
+    def energized(self, setting: bool) -> None:
+        cmd = _CMD_ENERGIZE if setting else _CMD_DEENERGIZE
+        self._quick_write(cmd)
 
     @property
     def max_speed(self) -> float:
@@ -183,9 +208,9 @@ class TicMotorI2C(TicMotor):
         pulse_decel = self._rpm_to_pps(rpms)
         self._max_decel_reg = [pulse_decel]
 
-    def halt(self) -> None:
-        """Stops the motor"""
-        self._halt_and_set_reg = [0]
+    def halt_and_set_position(self, position: int = 0) -> None:
+        """Stops the motor and keeps coils energized"""
+        self._halt_set_reg = [position]
         self.step_mode = self._step_mode
         self._rpm = 0
 
