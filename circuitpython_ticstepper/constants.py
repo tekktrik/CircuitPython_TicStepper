@@ -58,6 +58,7 @@ class StepMode:
                 return attr_value
         raise ValueError("Could not find the requested step mode")
 
+
 # pylint: disable=too-few-public-methods
 class OperationMode:
     """The operation modes of the TIC stepper motor driver"""
@@ -68,4 +69,3 @@ class OperationMode:
     WAITING_FOR_ERR_LINE = 6
     STARTING_UP = 8
     NORMAL = 10
-
