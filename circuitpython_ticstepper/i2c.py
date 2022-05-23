@@ -41,6 +41,8 @@ _CMD_GET_VAR = const(0xA1)
 _CMD_MAX_ACCEL = const(0xEA)
 _CMD_MAX_DECEL = const(0xE9)
 _CMD_CURRENT_LIMIT = const(0x91)
+_CMD_ENERGIZE = const(0x85)
+_CMD_DEENERGIZE = const(0x86)
 
 _OFFSET_CURRENT_VELOCITY = const(0x26)
 _OFFSET_STEP_MODE = const(0x49)
@@ -49,6 +51,7 @@ _OFFSET_MAX_SPEED = const(0x47)
 _OFFSET_MAX_ACCEL = const(0x4F)
 _OFFSET_MAX_DECEL = const(0x4B)
 _OFFSET_CURRENT_LIMIT = const(0x40)
+_OFFSET_ENERGIZED = const(0x00)
 
 
 class ClearMSBByteStruct:
@@ -144,6 +147,22 @@ class TicMotorI2C(TicMotor):
     def clear_error(self) -> None:
         """Clears errors for the motor driver"""
         self._quick_write(_CMD_CLEAR_ERROR)
+
+    @property
+    def energized(self) -> bool:
+        """Whether the motor coils are energized"""
+        self._get_var_8bit_unsigned_reg = [_OFFSET_ENERGIZED]
+        state = self._get_var_8bit_unsigned_reg[0]
+        if state == 2:
+            return False
+        elif state in (8, 10):
+            return True
+        raise RuntimeError("Some other energized state was detected")
+
+    @energized.setter
+    def energized(self, setting: bool) -> None:
+        cmd = _CMD_ENERGIZE if setting else _CMD_DEENERGIZE
+        self._quick_write(cmd)
 
     @property
     def max_speed(self) -> float:
