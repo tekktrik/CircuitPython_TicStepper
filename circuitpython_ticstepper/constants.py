@@ -57,3 +57,14 @@ class StepMode:
             if isinstance(attr_value, StepModeValues) and attr_value.value == enum:
                 return attr_value
         raise ValueError("Could not find the requested step mode")
+
+# pylint: disable=too-few-public-methods
+class OperationMode:
+
+    RESET = 0
+    DEENERGIZED = 2
+    SOFT_ERROR = 4
+    WAITING_FOR_ERR_LINE = 6
+    STARTING_UP = 8
+    NORMAL = 10
+

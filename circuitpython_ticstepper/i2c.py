@@ -18,7 +18,7 @@ from micropython import const
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register.i2c_struct import Struct
 from circuitpython_ticstepper import TicMotor
-from circuitpython_ticstepper.constants import StepMode
+from circuitpython_ticstepper.constants import StepMode, OperationMode
 
 try:
     from typing import Optional, Type, List
@@ -150,15 +150,20 @@ class TicMotorI2C(TicMotor):
         self._quick_write(_CMD_CLEAR_ERROR)
 
     @property
+    def operation_mode(self) -> int:
+        """Get the current operation mode"""
+        self._get_var_8bit_unsigned_reg = [_OFFSET_ENERGIZED]
+        return self._get_var_8bit_unsigned_reg[0]
+
+    @property
     def energized(self) -> bool:
         """Whether the motor coils are energized"""
-        self._get_var_8bit_unsigned_reg = [_OFFSET_ENERGIZED]
-        state = self._get_var_8bit_unsigned_reg[0]
-        if state == 2:
+        state = self.operation_mode
+        if state == OperationMode.DEENERGIZED:
             return False
-        if state in (8, 10):
+        if state in (OperationMode.STARTING_UP, OperationMode.NORMAL):
             return True
-        raise RuntimeError("Some other energized state was detected")
+        raise RuntimeError("Some other operation mode was detected")
 
     @energized.setter
     def energized(self, setting: bool) -> None:
