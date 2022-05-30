@@ -25,7 +25,7 @@ Driver for the TIC stepper motor drivers
 
 
 Dependencies
-=============
+============
 This driver depends on:
 
 * `Adafruit CircuitPython <https://github.com/adafruit/circuitpython>`_
