@@ -53,7 +53,7 @@ jobs:
       run: |
         pre-commit run --all-files
     - name: Build assets
-      run: circuitpython-build-bundles --filename_prefix ${{ steps.repo-name.outputs.repo-name }} --package_folder_prefix circuitpython --library_location .
+      run: circuitpython-build-bundles --filename_prefix ${{ steps.repo-name.outputs.repo-name }} --package_folder_prefix circuitpython_ --library_location .
     - name: Archive bundles
       uses: actions/upload-artifact@v2
       with:
