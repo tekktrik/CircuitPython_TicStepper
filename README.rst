@@ -17,9 +17,17 @@ Introduction
     :alt: Build Status
 
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/psf/black
-    :alt: Code Style: Black
+.. image:: https://img.shields.io/badge/code%20style-ruff-000000.svg
+    :target: https://github.com/astral-sh/ruff
+    :alt: Code Style: ruff
+
+.. image:: https://img.shields.io/badge/License-MIT-yellow.svg
+    :target: https://opensource.org/licenses/MIT
+    :alt: License: MIT
+
+.. image:: https://img.shields.io/badge/Maintained%3F-yes-green.svg
+    :target: https://github.com/tekktrik/CircuitPython_CSV
+    :alt: Maintained: Yes
 
 Driver for the TIC stepper motor drivers
 

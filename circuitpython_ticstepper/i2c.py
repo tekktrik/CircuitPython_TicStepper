@@ -2,29 +2,28 @@
 #
 # SPDX-License-Identifier: MIT
 
-"""
-`circuitpython_ticstepper.i2c`
-================================================================================
-
-TIC Motor over I2C control
-
+"""TIC Motor controlled via I2C.
 
 * Author(s): Alec Delaney
 
 """
 
 import struct
-from micropython import const
+
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register.i2c_struct import Struct
+from micropython import const
+
 from circuitpython_ticstepper import TicMotor
-from circuitpython_ticstepper.constants import StepMode, OperationMode
+from circuitpython_ticstepper.constants import OperationMode, StepMode
 
 try:
-    from typing import Optional, Type, List
-    from circuitpython_typing import ReadableBuffer
+    from typing import List, Optional, Type
+
     from busio import I2C
-    from circuitpython_ticstepper.constants import (  # pylint: disable=ungrouped-imports
+    from circuitpython_typing import ReadableBuffer
+
+    from circuitpython_ticstepper.constants import (
         StepModeValues,
     )
 except ImportError:
@@ -55,8 +54,8 @@ _OFFSET_ENERGIZED = const(0x00)
 
 
 class ClearMSBByteStruct:
-    """
-    Arbitrary structure register that is readable and writeable.
+    """Arbitrary structure register that is readable and writeable.
+
     Values are tuples that map to the values in the defined struct.  See struct
     module documentation for struct format string and its possible value types.
 
@@ -64,6 +63,7 @@ class ClearMSBByteStruct:
     """
 
     def __init__(self, register_address: int) -> None:
+        """Create the struct."""
         self.format = "<b"
         self.buffer = bytearray(1 + struct.calcsize(self.format))
         self.buffer[0] = register_address
@@ -71,21 +71,24 @@ class ClearMSBByteStruct:
     def __get__(
         self, obj: "TicMotorI2C", objtype: Optional[Type["TicMotorI2C"]] = None
     ) -> List[int]:
+        """Get the value from the register."""
         with obj.i2c_device as i2c:
             i2c.write_then_readinto(self.buffer, self.buffer, out_end=1, in_start=1)
         return struct.unpack_from(self.format, memoryview(self.buffer)[1:])
 
     def __set__(self, obj: "TicMotorI2C", value: ReadableBuffer) -> None:
+        """Set the value to the register."""
         struct.pack_into(self.format, self.buffer, 1, *value)
         with obj.i2c_device as i2c:
             i2c.write(self.buffer)
 
 
-# pylint: disable=too-many-instance-attributes
 class TicMotorI2C(TicMotor):
-    """Generic TIC motor driver contolled via I2C, this class is not intended
-    to be instanced directly due to various differences between motor controllers
-    - you should use a specific one instead (like ``TIC36v4``)
+    """Generic TIC motor driver contolled via I2C.
+
+    This class is not intended to be instanced directly due to various
+    differences between motor controllers - you should use a specific
+    one instead (like ``TIC36v4``).
 
     :param I2C i2c: The I2C bus object
     :param int address: The I2C address of the motor driver
@@ -112,14 +115,14 @@ class TicMotorI2C(TicMotor):
     def __init__(
         self, i2c: I2C, address: int = 0x0E, step_mode: StepModeValues = StepMode.FULL
     ) -> None:
-
+        """Initialize the I2C Tic stepper motor."""
         self.i2c_device = I2CDevice(i2c, address)
         super().__init__(step_mode)
         self.clear()
 
     @property
     def step_mode(self) -> StepModeValues:
-        """Gets and sets the stepper step mode"""
+        """The stepper step mode."""
         self._get_var_8bit_unsigned_reg = [_OFFSET_STEP_MODE]
         return StepMode.get_by_enum(self._get_var_8bit_unsigned_reg[0])
 
@@ -129,7 +132,7 @@ class TicMotorI2C(TicMotor):
         self._step_mode_reg = [mode.value]
 
     def clear(self) -> None:
-        """Clears and reinits the stepper motor"""
+        """Clear and reinits the stepper motor."""
         self.reset()
 
     def _quick_write(self, cmd: int) -> None:
@@ -138,26 +141,26 @@ class TicMotorI2C(TicMotor):
             i2c.write(packed_cmd)
 
     def reset(self) -> None:
-        """Resets the motor driver"""
+        """Reset the motor driver."""
         self._quick_write(_CMD_RESET)
 
     def reinit(self) -> None:
-        """Reinitializes the motor driver"""
+        """Reinitialize the motor driver."""
         self.step_mode = self._step_mode
 
     def clear_error(self) -> None:
-        """Clears errors for the motor driver"""
+        """Clear errors for the motor driver."""
         self._quick_write(_CMD_CLEAR_ERROR)
 
     @property
     def operation_mode(self) -> int:
-        """Get the current operation mode"""
+        """The current operation mode."""
         self._get_var_8bit_unsigned_reg = [_OFFSET_ENERGIZED]
         return self._get_var_8bit_unsigned_reg[0]
 
     @property
     def energized(self) -> bool:
-        """Whether the motor coils are energized"""
+        """Whether the motor coils are energized."""
         state = self.operation_mode
         if state == OperationMode.DEENERGIZED:
             return False
@@ -172,21 +175,19 @@ class TicMotorI2C(TicMotor):
 
     @property
     def max_speed(self) -> float:
-        """Gets and sets the maximum speed for the motor"""
+        """The maximum speed for the motor."""
         self._get_var_32bit_unsigned_reg = [_OFFSET_MAX_SPEED]
         pps = self._get_var_32bit_unsigned_reg[0]
         return self._pps_to_rpm(pps)
 
     @max_speed.setter
     def max_speed(self, rpm: float) -> None:
-        # if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
-        #    raise ValueError("Given speed is over the RPM threshold")
         pulse_speed = self._rpm_to_pps(rpm)
         self._max_speed_reg = [pulse_speed]
 
     @property
     def max_accel(self) -> float:
-        """The maximum acceleration the motor can experience in rpm/s"""
+        """The maximum acceleration the motor can experience in rpm/s."""
         self._get_var_32bit_unsigned_reg = [_OFFSET_MAX_ACCEL]
         pps2 = self._get_var_32bit_unsigned_reg[0]
         return self._pps_to_rpm(pps2)
@@ -198,7 +199,7 @@ class TicMotorI2C(TicMotor):
 
     @property
     def max_decel(self) -> float:
-        """The maximum deceleration the motor can experience in rpm/s"""
+        """The maximum deceleration the motor can experience in rpm/s."""
         self._get_var_32bit_unsigned_reg = [_OFFSET_MAX_DECEL]
         pps2 = self._get_var_32bit_unsigned_reg[0]
         return self._pps_to_rpm(pps2)
@@ -209,24 +210,23 @@ class TicMotorI2C(TicMotor):
         self._max_decel_reg = [pulse_decel]
 
     def halt_and_set_position(self, position: int = 0) -> None:
-        """Stops the motor and keeps coils energized"""
+        """Stop the motor and keep coils energized."""
         self._halt_set_reg = [position]
         self.step_mode = self._step_mode
         self._rpm = 0
 
     def move(self, units: int) -> None:
-        """Moves the given number of steps/microsteps
+        """Move the given number of steps/microsteps.
 
         :param int units: The number of steps/microsteps to move
         """
         self._move_reg = [units]
 
     def drive(self, rpm: float) -> None:
-        """Drives the motor at a given speed
+        """Drive the motor at a given speed.
 
         :param float rpm: The speed to move the motor in RPM
         """
-
         # if not -self.MAX_RPM <= rpm <= self.MAX_RPM:
         #    raise ValueError("Cannot set speed above {} RPM".format(self.MAX_RPM))
 
@@ -235,23 +235,22 @@ class TicMotorI2C(TicMotor):
 
     @property
     def is_moving(self) -> bool:
-        """Whether the stepper motor is actively moving"""
-
+        """Whether the stepper motor is actively moving."""
         self._get_var_32bit_signed_reg = [_OFFSET_CURRENT_VELOCITY]
         return self._get_var_32bit_signed_reg[0] != 0
 
     @property
     def uptime(self) -> float:
-        """The number of seconds the motor controller has been up.  This is
-        not affected by a reset command
-        """
+        """The number of seconds the motor controller has been up.
 
+        This is not affected by a reset command.
+        """
         self._get_var_32bit_unsigned_reg = [_OFFSET_UPTIME]
         return self._get_var_32bit_unsigned_reg[0] / 1000
 
     @property
     def current_limit(self) -> None:
-        """Sets the current limit for the I2C device in Amps"""
+        """The current limit for the I2C device in Amps."""
         self._get_var_8bit_unsigned_reg = [_OFFSET_CURRENT_LIMIT]
         response = self._get_var_8bit_unsigned_reg[0]
         return self.convert_current_enum(response)
@@ -261,15 +260,9 @@ class TicMotorI2C(TicMotor):
         self._current_limit_reg = [self.convert_current_value(current)]
 
     def convert_current_value(self, current: float) -> int:
-        """Converts the desired current into the TIC value, rounds down
-        to nearest acceptable value
-        """
-
+        """Convert the desired current into the TIC value, rounds down to nearest acceptable value."""
         raise NotImplementedError("Must be implemented in a TIC motor subclass")
 
     def convert_current_enum(self, enum_value: int) -> float:
-        """Converts the desired TIC enumeration into the corresponding
-        current limit
-        """
-
+        """Convert the desired TIC enumeration into the corresponding current limit."""
         raise NotImplementedError("Must be implemented in a TIC motor subclass")

@@ -1,6 +1,54 @@
-# SPDX-FileCopyrightText: 2020 Diego Elio Pettenò
+# SPDX-FileCopyrightText: 2026 Alec Delaney
 #
-# SPDX-License-Identifier: Unlicense
+# SPDX-License-Identifier: MIT
 
-[tool.black]
-target-version = ['py35']
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+    "setuptools-scm",
+]
+
+[project]
+name = "circuitpython-ticstepper"
+description = "Driver for the TIC stepper motor drivers"
+version = "0.0.0+auto.0"
+readme = "README.rst"
+authors = [
+    {name = "Alec Delaney", email = "tekktrik@gmail.com"}
+]
+keywords = [
+    "adafruit",
+    "blinka",
+    "circuitpython",
+    "micropython",
+    "ticstepper",
+    "tic",
+    "stepper",
+    "motor",
+]
+license = "MIT"
+classifiers = [
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: System :: Hardware",
+        "Programming Language :: Python :: 3",
+]
+dynamic = ["dependencies", "optional-dependencies"]
+
+[project.urls]
+Homepage = "https://github.com/tekktrik/CircuitPython_TicStepper"
+Repository = "https://github.com/tekktrik/CircuitPython_TicStepper"
+Doumentation = "https://circuitpython-ticstepper.readthedocs.io"
+
+[tool.setuptools]
+packages = ["circuitpython_ticstepper"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+optional-dependencies = {optional = {file = ["optional_requirements.txt"]}}
+
+[tool.ruff.lint]
+select = ["D", "PL", "I"]
+ignore = ["D213", "D203"]
