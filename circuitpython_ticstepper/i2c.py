@@ -23,7 +23,7 @@ try:
     from busio import I2C
     from circuitpython_typing import ReadableBuffer
 
-    from circuitpython_ticstepper.constants import (  # pylint: disable=ungrouped-imports
+    from circuitpython_ticstepper.constants import (
         StepModeValues,
     )
 except ImportError:
@@ -83,7 +83,6 @@ class ClearMSBByteStruct:
             i2c.write(self.buffer)
 
 
-# pylint: disable=too-many-instance-attributes
 class TicMotorI2C(TicMotor):
     """Generic TIC motor driver contolled via I2C.
 

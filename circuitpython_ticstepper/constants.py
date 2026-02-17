@@ -52,7 +52,6 @@ class StepMode:
         raise ValueError("Could not find the requested step mode")
 
 
-# pylint: disable=too-few-public-methods
 class OperationMode:
     """The operation modes of the TIC stepper motor driver."""
 
