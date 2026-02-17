@@ -4,6 +4,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+"""Sphinx configuration settings."""
+
 import os
 import sys
 

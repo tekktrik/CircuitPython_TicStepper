@@ -2,3 +2,5 @@
 # SPDX-FileCopyrightText: Copyright (c) 2022 Alec Delaney
 #
 # SPDX-License-Identifier: Unlicense
+
+"""Example usage of circuitpython_ticstepper."""

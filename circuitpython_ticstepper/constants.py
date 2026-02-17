@@ -2,12 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-"""
-`circuitpython_ticstepper.constants`
-================================================================================
-
-Constants need to TIC stepper motor driver operation
-
+"""Constants needed for TIC stepper motor driver operation.
 
 * Author(s): Alec Delaney
 
@@ -19,7 +14,7 @@ StepModeValues = namedtuple("StepModeValues", ["value", "multiplier"])
 
 
 class StepMode:
-    """Step mode constants"""
+    """Step mode constants."""
 
     FULL = StepModeValues(0, 1)
     HALF = StepModeValues(1, 2)
@@ -33,11 +28,10 @@ class StepMode:
 
     @classmethod
     def get_by_factor(cls, factor: int):
-        """Gets a StepMode constant by the TIC param value
+        """Get a StepMode constant by the TIC param value.
 
         :param int value: The TIC param value
         """
-
         for attr_value in cls.__dict__.values():
             if (
                 isinstance(attr_value, StepModeValues)
@@ -48,11 +42,10 @@ class StepMode:
 
     @classmethod
     def get_by_enum(cls, enum: int):
-        """Gets a StepMode by the Tic enum value
+        """Get a StepMode by the Tic enum value.
 
         :param int enum: The Tic enum value
         """
-
         for attr_value in cls.__dict__.values():
             if isinstance(attr_value, StepModeValues) and attr_value.value == enum:
                 return attr_value
@@ -61,7 +54,7 @@ class StepMode:
 
 # pylint: disable=too-few-public-methods
 class OperationMode:
-    """The operation modes of the TIC stepper motor driver"""
+    """The operation modes of the TIC stepper motor driver."""
 
     RESET = 0
     DEENERGIZED = 2
